@@ -1,0 +1,59 @@
+@page "/pesquisarprod"
+@inject HttpClient Http
+
+<div class="container">
+  <h3>Pesquisar Produtos</h3>
+
+  <input type="text" @bind="searchTerm" placeholder="Digite o nome do produto" />
+  <button type="button" class="btn btn-primary" @onclick="SearchProducts">Pesquisar</button>
+
+  @if (products != null && products.Count > 0)
+  {
+    <ul style="list-style-type: none;">
+      @for (int i = 0; i < Math.Min(4, products.Count); i++)
+      {
+        <li>
+          <p>Código: @products[i].CodItem</p>
+          <p>Nome: @products[i].Nome</p>
+          <img src="@products[i].Imagem" alt="@products[i].Nome" width="200" height="200" />
+           <hr />
+        </li>
+      }
+    </ul>
+  }
+  else if (products != null && products.Count == 0)
+  {
+    <p>Nenhum produto encontrado.</p>
+  }
+</div>
+
+@code {
+  private List<Product> products;
+  private List<Product> allProducts;
+  private string searchTerm = string.Empty;
+
+  protected override async Task OnInitializedAsync()
+  {
+    allProducts = await Http.GetFromJsonAsync<List<Product>>("sample-data/frutas.json");
+  }
+
+  private void SearchProducts()
+  {
+    if (!string.IsNullOrEmpty(searchTerm))
+    {
+      products = allProducts.Where(p => p.Nome.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+    else
+    {
+      products = allProducts;
+    }
+  }
+
+  public class Product
+  {
+    public string CodItem { get; set; }
+    public string Nome { get; set; }
+    public string Imagem { get; set; }
+  }
+}
+
